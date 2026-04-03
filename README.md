@@ -10,8 +10,6 @@
 ## 安装与使用
 ### cargo
 ```bash
-git clone https://github.com/hnchengzong/hn-randfile-rust.git
-cd ./hn-randfile-rust
 cargo install hn-randfile
 
 # 指定多个目录
