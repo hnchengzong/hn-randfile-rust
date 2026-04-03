@@ -2,6 +2,10 @@
 name = "hn-randfile"
 version = "0.1.0"
 edition = "2024"
+description = "A random file generator tool"
+license = "MIT"
+repository = "https://github.com/hnchengzong/hn-randfile-rust"
+authors = ["hnchengzong"]
 
 [dependencies]
 anyhow = "1.0.102"
