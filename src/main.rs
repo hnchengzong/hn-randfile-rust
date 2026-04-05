@@ -9,9 +9,6 @@ use std::path::PathBuf;
     about = "随机文件生成器", 
     long_about = None)]
 struct Cli {
-    #[arg(num_args = 1..,default_value = ".")]
-    pub dirs: Vec<PathBuf>,
-
     #[arg(short, long, default_value_t = 16)]
     number: usize,
 
@@ -24,8 +21,11 @@ struct Cli {
     #[arg(short = 'x', long, default_value = "txt")]
     suffix: Option<String>,
 
-    #[arg(long, default_value_t = false)]
+    #[arg(short = 'f', long, default_value_t = false)]
     force: bool,
+
+    #[arg(num_args = 1..,default_value = ".")]
+    pub dirs: Vec<PathBuf>,
 }
 
 pub fn random_string(len: usize) -> String {
@@ -48,21 +48,25 @@ pub fn random_name(len: usize, suffix: Option<&str>) -> String {
 }
 
 pub fn random_content(size: usize) -> Vec<u8> {
-    let file_string: String = random_string(size);
-    file_string.into_bytes().into_iter().take(size).collect()
+    random_string(size).into_bytes()
 }
 
-pub fn ensure_dir_exists(path: &str) -> anyhow::Result<()> {
-    if !std::path::Path::new(path).exists() {
+pub fn ensure_dir_exists(path: &str, force: bool) -> anyhow::Result<()> {
+    let p = std::path::Path::new(path);
+    if p.exists() {
+        return Ok(());
+    }
+    if !force {
         println!("Directory {} does not exist, creating it?(y/N)", path);
-        let mut input: String = String::new();
+        let mut input = String::new();
         std::io::stdin().read_line(&mut input)?;
         if input.trim().to_lowercase() != "y" {
             println!("Stop.");
             std::process::exit(0);
         }
-        fs::create_dir_all(path)?;
     }
+
+    fs::create_dir_all(p)?;
     Ok(())
 }
 
@@ -70,20 +74,22 @@ fn main() -> anyhow::Result<()> {
     let cli: Cli = Cli::parse();
 
     println!(
-        "It will generate {} file(s) with name length {}, size {} strings, suffix: {:?}.",
+        "Generate {} file(s) with name length {}, size {} bytes, suffix: {:?}.",
         cli.number, cli.length, cli.size, cli.suffix
     );
-    println!("Do you want to continue? (y/n)");
-
-    let mut input: String = String::new();
-    std::io::stdin().read_line(&mut input)?;
-    if input.trim().to_lowercase() != "y" && !cli.force {
-        println!("Stop.");
-        return Ok(());
+    if !cli.force {
+        println!("Do you want to continue? (y/n)");
+        let mut input: String = String::new();
+        std::io::stdin().read_line(&mut input)?;
+        if input.trim().to_lowercase() != "y" {
+            println!("Stop.");
+            return Ok(());
+        }
     }
+
     for dir in cli.dirs.iter() {
-        let dir_string = dir.to_str().unwrap();
-        ensure_dir_exists(dir_string)?;
+        let dir_string = &dir.to_string_lossy().to_string();
+        ensure_dir_exists(dir_string, cli.force)?;
         for _ in 0..cli.number {
             let file_name = random_name(cli.length, cli.suffix.as_deref());
             let file_path = dir.join(file_name);
