@@ -24,6 +24,9 @@ struct Cli {
     #[arg(short = 'f', long, default_value_t = false)]
     force: bool,
 
+    #[arg(short = 'r', long, default_value_t = false)]
+    random_strings: bool,
+
     #[arg(num_args = 1..,default_value = ".")]
     pub dirs: Vec<PathBuf>,
 }
@@ -72,6 +75,13 @@ pub fn ensure_dir_exists(path: &str, force: bool) -> anyhow::Result<()> {
 
 fn main() -> anyhow::Result<()> {
     let cli: Cli = Cli::parse();
+
+    if cli.random_strings {
+        for _ in 0..cli.number {
+            println!("Generate random string: {}", random_string(cli.length));
+        }
+        return Ok(());
+    }
 
     println!(
         "Generate {} file(s) per directory with name length {}, size {} bytes, suffix: {:?}.",
