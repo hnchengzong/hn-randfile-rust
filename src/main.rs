@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
     let cli: Cli = Cli::parse();
 
     println!(
-        "Generate {} file(s) with name length {}, size {} bytes, suffix: {:?}.",
+        "Generate {} file(s) per directory with name length {}, size {} bytes, suffix: {:?}.",
         cli.number, cli.length, cli.size, cli.suffix
     );
     if !cli.force {
