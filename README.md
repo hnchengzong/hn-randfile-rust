@@ -34,7 +34,7 @@ hn-randfile ./files --number 10 --length 12 --size 2048 --suffix txt
 
 ```bash
 
-git clone https://github.com/hunan-n/hn-randfile-rust.git
+git clone --depth 1 https://github.com/hunan-n/hn-randfile-rust.git
 cd ./hn-randfile-rust
 # 编译
 cargo build --release
