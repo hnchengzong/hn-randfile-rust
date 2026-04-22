@@ -5,7 +5,7 @@ use std::fs;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(author="hnchengzong", version="0.1.0", about = "随机文件生成器", long_about = None)]
+#[command(author = "hnchengzong", version = "0.1.0", about = "随机文件生成器")]
 struct Cli {
     #[arg(short, long, default_value_t = 16)]
     file_count: usize,
@@ -16,7 +16,7 @@ struct Cli {
     #[arg(short, long, default_value_t = 1024)]
     file_size: usize,
 
-    #[arg(short = 'x', long, default_value = "txt")]
+    #[arg(short = 'x', long)]
     ext: Option<String>,
 
     #[arg(short = 'f', long, default_value_t = false)]
@@ -36,7 +36,7 @@ fn confirm(prompt: &str, force: bool) -> anyhow::Result<bool> {
     println!("{} (y/n)", prompt);
     let mut input = String::new();
     std::io::stdin().read_line(&mut input)?;
-    Ok(input.trim().to_lowercase() == "y")
+    Ok(input.trim().eq_ignore_ascii_case("y"))
 }
 
 fn random_name(rng: &mut impl Rng, len: usize, ext: Option<&str>) -> String {
@@ -45,10 +45,10 @@ fn random_name(rng: &mut impl Rng, len: usize, ext: Option<&str>) -> String {
         .take(len)
         .map(char::from)
         .collect();
-    if let Some(ext) = ext {
-        format!("{}.{}", name, ext)
-    } else {
-        name
+
+    match ext {
+        Some(e) => format!("{}.{}", name, e),
+        None => name,
     }
 }
 
@@ -56,46 +56,68 @@ fn random_content(rng: &mut impl Rng, size: usize) -> Vec<u8> {
     Alphanumeric
         .sample_iter(rng)
         .take(size)
-        .map(char::from)
-        .collect::<String>()
-        .into_bytes()
+        .map(|c| c as u8)
+        .collect()
 }
 
-fn main() -> anyhow::Result<()> {
-    let cli = Cli::parse();
+fn handle_print_strings(file_count: usize, name_len: usize) {
     let mut rng = rand::rng();
-
-    if cli.just_strings {
-        for _ in 0..cli.file_count {
-            let s: String = Alphanumeric
-                .sample_iter(&mut rng)
-                .take(cli.name_len)
-                .map(char::from)
-                .collect();
-            println!("{}", s);
-        }
-        return Ok(());
+    for _ in 0..file_count {
+        let s: String = Alphanumeric
+            .sample_iter(&mut rng)
+            .take(name_len)
+            .map(char::from)
+            .collect();
+        println!("{}", s);
     }
+}
 
+fn handle_generate_files(
+    dirs: &[PathBuf],
+    file_count: usize,
+    name_len: usize,
+    file_size: usize,
+    ext: Option<&str>,
+    force_create: bool,
+) -> anyhow::Result<()> {
     println!(
         "Generate {} file(s) per directory with name length {}, size {} bytes, suffix: {:?}.",
-        cli.file_count, cli.name_len, cli.file_size, cli.ext
+        file_count, name_len, file_size, ext
     );
 
-    if !confirm("Do you want to continue?", cli.force_create)? {
+    if !confirm("Do you want to continue?", force_create)? {
         println!("Stop.");
         return Ok(());
     }
 
-    for dir in &cli.dirs {
+    let mut rng = rand::rng();
+    for dir in dirs {
         fs::create_dir_all(dir)?;
-        for _ in 0..cli.file_count {
-            let filename = random_name(&mut rng, cli.name_len, cli.ext.as_deref());
+        for _ in 0..file_count {
+            let filename = random_name(&mut rng, name_len, ext);
             let path = dir.join(filename);
-            let content = random_content(&mut rng, cli.file_size);
+            let content = random_content(&mut rng, file_size);
             fs::write(path, content)?;
         }
     }
 
     Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
+    let cli = Cli::parse();
+
+    if cli.just_strings {
+        handle_print_strings(cli.file_count, cli.name_len);
+        return Ok(());
+    }
+
+    handle_generate_files(
+        &cli.dirs,
+        cli.file_count,
+        cli.name_len,
+        cli.file_size,
+        cli.ext.as_deref(),
+        cli.force_create,
+    )
 }
