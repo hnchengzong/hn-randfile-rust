@@ -17,6 +17,7 @@
 ### cargo
 
 ```bash
+
 cargo install hn-randfile
 
 # 指定多个目录
@@ -24,6 +25,7 @@ hn-randfile ./dir1 ./dir2 ./dir3
 
 # 参数示例
 hn-randfile ./files --number 10 --length 12 --size 2048 --suffix txt
+
 ```
 
 ### AUR
