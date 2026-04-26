@@ -1,6 +1,6 @@
 use crate::random::{random_content, random_name};
 use anyhow::Result;
-use rand::RngCore;
+use rand_distr::Distribution;
 use std::fs;
 use std::path::PathBuf;
 
