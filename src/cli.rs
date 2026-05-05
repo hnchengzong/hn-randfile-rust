@@ -25,3 +25,18 @@ pub struct Cli {
     #[arg(num_args = 1.., default_value = ".")]
     pub dirs: Vec<PathBuf>,
 }
+
+impl Cli {
+    pub fn validate(&self) -> anyhow::Result<()> {
+        if self.file_count <= 0 {
+            anyhow::bail!("The number of files must be greater than 0");
+        }
+        if self.name_len <= 0 || self.name_len > 1024 {
+            anyhow::bail!("The length of the filename must be between 1 and 1024");
+        }
+        if self.file_size <= 0 {
+            anyhow::bail!("The file size must be greater than 0");
+        }
+        Ok(())
+    }
+}
