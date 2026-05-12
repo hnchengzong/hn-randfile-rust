@@ -2,7 +2,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(author = "hnchengzong", version = "0.1.0", about = "随机文件生成器")]
+#[command(author = "hnchengzong", version = "0.2.2", about = "随机文件生成器")]
 pub struct Cli {
     #[arg(short, long, default_value_t = 16)]
     pub file_count: usize,
