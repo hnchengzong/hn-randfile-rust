@@ -1,42 +1,33 @@
 use clap::Parser;
 use std::path::PathBuf;
 
+
+
 #[derive(Parser)]
-#[command(author = "hnchengzong", version = "0.2.2", about = "随机文件生成器")]
+#[command(author = "hnchengzong",
+version = env!("CARGO_PKG_VERSION"),
+about = "Random File Generator",
+long_about = "Generates a specified number of files filled with random data.")]
 pub struct Cli {
-    #[arg(short, long, default_value_t = 16)]
+    #[arg(short = 'c', long, default_value_t = 16,value_parser = clap::value_parser!(u64).range(1..),help = "Number of files")]
     pub file_count: usize,
 
-    #[arg(short, long, default_value_t = 8)]
+    #[arg(short = 'n', long,default_value_t = 8, value_parser = clap::value_parser!(u64).range(1..=1024),help = "Length of the filename")]
     pub name_len: usize,
 
-    #[arg(short, long, default_value_t = 1024)]
+    #[arg(short = 's', long, default_value_t = 1024,value_parser = clap::value_parser!(u64).range(1..),help = "Size of each file in bytes" )]
     pub file_size: usize,
 
-    #[arg(short = 'x', long)]
+    #[arg(short = 'x', long,help = "File extension")]
     pub ext: Option<String>,
 
-    #[arg(short = 'f', long, default_value_t = false)]
+    #[arg(short = 'f', long, default_value_t = false,help = "Force overwrite")]
     pub force_create: bool,
 
-    #[arg(short = 'r', long, default_value_t = false)]
+    #[arg(short = 'r', long, default_value_t = false,help = "Only print random strings to stdout")]
     pub just_strings: bool,
 
-    #[arg(num_args = 1.., default_value = ".")]
+    #[arg(num_args = 1.., default_value = ".",help = "Target directories")]
     pub dirs: Vec<PathBuf>,
 }
 
-impl Cli {
-    pub fn validate(&self) -> anyhow::Result<()> {
-        if self.file_count <= 0 {
-            anyhow::bail!("The number of files must be greater than 0");
-        }
-        if self.name_len <= 0 || self.name_len > 1024 {
-            anyhow::bail!("The length of the filename must be between 1 and 1024");
-        }
-        if self.file_size <= 0 {
-            anyhow::bail!("The file size must be greater than 0");
-        }
-        Ok(())
-    }
-}

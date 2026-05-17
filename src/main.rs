@@ -8,8 +8,6 @@ use cli::Cli;
 fn main() -> anyhow::Result<()> {
     let cli: Cli = Cli::parse();
 
-    cli.validate()?;
-
     if cli.just_strings {
         generator::handle_print_strings(cli.file_count, cli.name_len);
         return Ok(());
